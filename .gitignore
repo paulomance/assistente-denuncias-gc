@@ -45,3 +45,9 @@ brand/
 # Continua existindo localmente pra quem desenvolve com Claude Code;
 # decisao explicita do usuario de nao publicar no repositorio publico.
 .claude/
+
+# Atalho local pra rodar o app em modo dev (npm run dev) direto do
+# Explorer, sem terminal — ferramenta de conveniencia pra quem ja tem
+# o repositorio clonado, nao algo que o usuario final baixa/precisa (o
+# usuario final usa o instalador da Release, ver README.md).
+Abrir Assistente de Denúncias GC.bat

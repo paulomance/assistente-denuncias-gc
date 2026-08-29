@@ -1,4 +1,4 @@
-AVISOS DE TERCEIROS — Assistente de Denúncias Gamers Club
+AVISOS DE TERCEIROS — Assistente de Denúncias GC
 ============================================================
 
 Este aplicativo usa componentes de código aberto de terceiros. Este
@@ -72,27 +72,70 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-NOTA IMPORTANTE (não resolvida — ver docs/HANDOFF.md): o release oficial
-do CSGOVE (v3.1.6, win32-x64.zip, confirmado byte-a-byte contra a cópia
-usada por este projeto) inclui, além do binário do próprio CSGOVE, dois
-arquivos que não são código do autor do CSGOVE: `tier0.dll` e
-`vaudio_celt.dll`, componentes do motor Source da Valve. Confirmado
-tecnicamente: os dois arquivos estão de fato incluídos no instalador
-deste app (ficam ao lado de csgove.exe em "resources/csgove/", o
-mesmo local onde o Windows procura DLLs de que um .exe depende) — não
-é uma suposição, é o que está empacotado de verdade. (Um terceiro
-arquivo que acompanha o mesmo release, `opus.dll`, não faz parte
-desta pendência: é a biblioteca de codec Opus/CELT da Xiph.org,
-open source, sem relação com a Valve.)
+NOTA IMPORTANTE (ver README.md, seção "Limitações conhecidas"): o
+release oficial do CSGOVE (v3.1.6, win32-x64.zip, confirmado
+byte-a-byte contra a cópia usada por este projeto) inclui, além do
+binário do próprio CSGOVE, dois arquivos que não são código do autor
+do CSGOVE: `tier0.dll` e `vaudio_celt.dll`, componentes do motor
+Source da Valve. Confirmado tecnicamente: os dois arquivos estão de
+fato incluídos no instalador deste app (ficam ao lado de csgove.exe em
+"resources/csgove/", o mesmo local onde o Windows procura DLLs de que
+um .exe depende) — não é uma suposição, é o que está empacotado de
+verdade.
 
 O README do CSGOVE não documenta a origem exata nem os termos de
 redistribuição de `tier0.dll`/`vaudio_celt.dll` especificamente — a
 licença MIT acima cobre o código do próprio AkiVer, não necessariamente
 esses dois binários de terceiros inclusos por conveniência no release
-dele. Isso precisa de revisão jurídica antes de uma distribuição pública
-em larga escala — não foi possível determinar com confiança, só por
-pesquisa pública, os termos exatos de redistribuição desses dois
-arquivos especificamente.
+dele. Pesquisa pública (README, workflow de CI do CSGOVE) não encontrou
+documentação da Valve nem do autor do CSGOVE sobre os termos exatos de
+redistribuição desses dois arquivos especificamente — mantido como uma
+limitação conhecida e documentada, não uma afirmação de conformidade.
+
+------------------------------------------------------------
+Opus (opus.dll, incluído no mesmo release do CSGOVE)
+------------------------------------------------------------
+
+Diferente dos dois arquivos acima, `opus.dll` NÃO é um componente da
+Valve — é a biblioteca de codec Opus, compilada pelo próprio pipeline
+de build oficial do CSGOVE a partir do código-fonte oficial do Opus
+(https://opus-codec.org), sem relação com a Valve/Source engine.
+
+Licença: BSD 3-Clause
+Fonte: https://opus-codec.org/license/
+
+Copyright 2001-2023 Xiph.Org, Skype Limited, Octasic,
+Jean-Marc Valin, Timothy B. Terriberry,
+CSIRO, Gregory Maxwell, Mark Borgerding,
+Erik de Castro Lopo
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+- Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+- Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+- Neither the name of Internet Society, IETF or IETF Trust, nor the
+names of specific contributors, may be used to endorse or promote
+products derived from this software without specific prior written
+permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ============================================================
 Componentes empacotados no build (não capturados pela varredura de

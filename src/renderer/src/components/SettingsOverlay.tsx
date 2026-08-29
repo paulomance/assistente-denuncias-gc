@@ -396,11 +396,11 @@ export function SettingsOverlay({
         )}
         <p className="about-app__tagline">Feito pela comunidade, para a comunidade.</p>
         <p className="settings-overlay__section-note">
-          Ajuda jogadores de Counter-Strike a organizar provas de comunicação de voz de uma
-          partida — a partir de uma demo (.dem), identifica os jogadores, deixa você ouvir e
-          selecionar quem denunciar, e organiza os áudios prontos para anexar num processo de
-          denúncia. O envio da denúncia em si continua sendo feito pelos canais oficiais da
-          plataforma onde a partida aconteceu.
+          Ajuda jogadores de Counter-Strike a organizar provas de comunicação de voz e texto de
+          uma partida — a partir de uma demo (.dem), identifica os jogadores e as evidências
+          disponíveis, deixa você revisar e escolher o que quer denunciar, e organiza tudo pronto
+          para anexar num processo de denúncia. O envio da denúncia em si continua sendo feito
+          pelos canais oficiais da plataforma onde a partida aconteceu.
         </p>
 
         <p className="settings-overlay__section-note settings-overlay__section-note--spaced settings-overlay__independence-title">
@@ -412,9 +412,14 @@ export function SettingsOverlay({
           outra plataforma.
         </p>
 
-        <p className="settings-overlay__section-note settings-overlay__section-note--spaced">
-          Código-fonte: repositório público ainda não publicado.
-        </p>
+        <a
+          href="https://github.com/paulomance/assistente-denuncias-gc"
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn--link demo-summary__link-button settings-overlay__section-note--spaced"
+        >
+          <Icon name="external" size={12} /> Código-fonte no GitHub
+        </a>
 
         {canCheckUpdates && (
           <button
@@ -441,7 +446,7 @@ export function SettingsOverlay({
             </a>{' '}
             (licença MIT) — sem vínculo com a Gamers Club.
           </li>
-          <li>Bibliotecas e componentes de terceiros — ver lista completa abaixo.</li>
+          <li>Diversas bibliotecas de código aberto (Electron, React e outras).</li>
         </ul>
         <button
           type="button"

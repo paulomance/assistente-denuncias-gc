@@ -88,6 +88,10 @@
       "artifactName": "${productName} Setup ${version}.${ext}",
       "uninstallDisplayName": "${productName} ${version}"
     },
-    "publish": null
+    "publish": {
+      "provider": "github",
+      "owner": "paulomance",
+      "repo": "assistente-denuncias-gc"
+    }
   }
 }
