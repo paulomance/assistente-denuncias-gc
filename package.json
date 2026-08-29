@@ -1,0 +1,93 @@
+{
+  "name": "assistente-denuncias-gc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Assistente de Denúncias GC (Beta) — projeto independente, feito pela comunidade, que ajuda jogadores de CS a organizar provas de comunicação de voz para denúncias de toxicidade. Sem vínculo com a Gamers Club.",
+  "author": "Comunidade Assistente de Denúncias GC",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "dist:win": "electron-vite build && electron-builder --win --publish=never",
+    "dist:win:test": "electron-vite build && electron-builder --win --publish=never --config.appId=com.assistentedenunciasgc.app.test --config.extraMetadata.name=assistente-denuncias-gc-test --config.productName=\"Assistente de Denúncias GC (Beta) — Versão de Teste\" --config.extraMetadata.gcReleaseChannel=test --config.nsis.shortcutName=\"Assistente de Denúncias GC (Teste)\" --config.nsis.artifactName=\"Assistente de Denuncias GC - TESTE (v${version}).${ext}\"",
+    "licenses:generate": "node scripts/generate-third-party-notices.js",
+    "icon:generate": "node scripts/generate-app-icon.js"
+  },
+  "dependencies": {
+    "@laihoe/demoparser2": "^0.42.0",
+    "electron-updater": "^6.8.9",
+    "googleapis": "^176.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^2.3.0",
+    "jsdom": "^30.0.1",
+    "license-checker-rseidelsohn": "^5.0.1",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "sharp": "^0.35.3",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "allowScripts": {
+    "electron@31.7.7": true,
+    "esbuild@0.21.5": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "build": {
+    "appId": "com.assistentedenunciasgc.app",
+    "productName": "Assistente de Denúncias GC (Beta)",
+    "copyright": "Copyright © contribuidores do projeto Assistente de Denúncias GC",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "tools/csgove/win32-x64",
+        "to": "csgove"
+      },
+      {
+        "from": "credentials",
+        "to": "credentials"
+      },
+      {
+        "from": "licenses",
+        "to": "licenses"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icons/report-tool-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Assistente de Denúncias GC",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "language": "1046",
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "uninstallDisplayName": "${productName} ${version}"
+    },
+    "publish": null
+  }
+}

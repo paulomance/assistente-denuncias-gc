@@ -1,0 +1,47 @@
+node_modules/
+out/
+dist/
+release/
+*.log
+.env
+.env.*
+.vscode/
+.idea/
+Thumbs.db
+
+# Demos e audio contem voz real de jogadores reais — nunca versionar.
+*.dem
+
+# Pastas de saida/scratch de testes manuais, reunidas fora da raiz do
+# projeto — nunca necessarias para rodar/buildar/testar o app. Ver
+# _dados-locais/README.md.
+_dados-locais/
+
+# Binario de terceiros (CSGOVE) baixado do release oficial — nao versionar.
+tools/
+
+# Credenciais OAuth do Google (client_secret) — NUNCA versionar. Ver
+# README.md para como obter/instalar o proprio arquivo localmente.
+credentials/
+
+# Tokens de autenticacao do Google Drive persistidos localmente
+# (criptografados via safeStorage, mas mesmo assim nunca versionar).
+.gc-drive-auth/
+
+# Notas internas de desenvolvimento (historico de sessao, planejamento
+# tecnico) — nunca escritas pra leitura publica, contem trechos de
+# identificadores reais espalhados pelo historico. O README.md publico
+# (raiz do projeto) e a documentacao voltada pro publico.
+docs/
+
+# Imagens de referencia da marca OFICIAL da Gamers Club (nao geradas por
+# este projeto, nao usadas em nenhum lugar do codigo/app — ver auditoria
+# de pre-publicacao) — nunca versionar identidade visual de terceiros.
+brand/
+
+# Configuracao/skills de desenvolvimento com o Claude Code — instrucoes
+# de contexto pro assistente de IA usado no desenvolvimento, nunca
+# codigo do app nem nada necessario pra build/instalar/rodar o produto.
+# Continua existindo localmente pra quem desenvolve com Claude Code;
+# decisao explicita do usuario de nao publicar no repositorio publico.
+.claude/
