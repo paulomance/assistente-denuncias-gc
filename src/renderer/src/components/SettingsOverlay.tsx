@@ -6,6 +6,7 @@ import { applyFontScale } from '../utils/fontScale'
 import type { AppearanceSettings, EvidenceStorageInfo, FontSize, UiScale, WindowMode } from '../../../shared/types/Settings'
 import type { CloudAuthStatus } from '../../../shared/types/CloudStorage'
 import type { AppInfo } from '../../../shared/types/AppInfo'
+import type { UpdateStatus } from '../../../shared/types/Update'
 
 const RELEASE_CHANNEL_LABEL: Record<AppInfo['channel'], string> = {
   development: 'Desenvolvimento',
@@ -66,7 +67,12 @@ export function SettingsOverlay({
   const [isRestarting, setIsRestarting] = useState(false)
   const [appInfo, setAppInfo] = useState<AppInfo | null>(null)
   const [canCheckUpdates, setCanCheckUpdates] = useState(false)
-  const [updateCheckRequested, setUpdateCheckRequested] = useState(false)
+  // Derivado do status real transmitido pelo processo principal (ver
+  // onUpdateStatus abaixo), nunca uma flag propria que so vai pra
+  // `true` e nunca volta — achado real: a versao anterior deste botao
+  // ficava travada em "Verificando atualizacoes..." pra sempre depois
+  // do primeiro clique, porque nada nunca resetava o flag de volta.
+  const [checkingUpdates, setCheckingUpdates] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -92,9 +98,22 @@ export function SettingsOverlay({
     }
   }, [])
 
+  useEffect(() => {
+    if (!canCheckUpdates) return undefined
+    let unsubscribe: (() => void) | undefined
+    try {
+      unsubscribe = window.gcReport.onUpdateStatus((status: UpdateStatus) => {
+        setCheckingUpdates(status.status === 'checking')
+      })
+    } catch {
+      // Botao continua clicavel, so sem feedback de "Verificando..." —
+      // nao critico.
+    }
+    return () => unsubscribe?.()
+  }, [canCheckUpdates])
+
   const handleCheckForUpdates = useCallback(() => {
-    setUpdateCheckRequested(true)
-    void window.gcReport.checkForUpdates()
+    void window.gcReport.checkForUpdates(true)
   }, [])
 
   useEffect(() => {
@@ -392,6 +411,11 @@ export function SettingsOverlay({
             {appInfo.channel !== 'production' && (
               <span className="about-app__channel-badge">{RELEASE_CHANNEL_LABEL[appInfo.channel]}</span>
             )}
+            {canCheckUpdates && (
+              <button type="button" className="btn btn--link" onClick={handleCheckForUpdates} disabled={checkingUpdates}>
+                {checkingUpdates ? 'Verificando...' : 'Verificar atualizações'}
+              </button>
+            )}
           </p>
         )}
         <p className="about-app__tagline">Feito pela comunidade, para a comunidade.</p>
@@ -412,24 +436,6 @@ export function SettingsOverlay({
           outra plataforma.
         </p>
 
-        <a
-          href="https://github.com/paulomance/assistente-denuncias-gc"
-          target="_blank"
-          rel="noreferrer"
-          className="btn btn--link demo-summary__link-button settings-overlay__section-note--spaced"
-        >
-          <Icon name="external" size={12} /> Código-fonte no GitHub
-        </a>
-
-        {canCheckUpdates && (
-          <button
-            type="button"
-            className="btn btn--link demo-summary__link-button"
-            onClick={handleCheckForUpdates}
-          >
-            {updateCheckRequested ? 'Verificando atualizações...' : 'Verificar atualizações'}
-          </button>
-        )}
       </section>
 
       <section className="settings-overlay__section">

@@ -131,7 +131,14 @@ const gcReportApi = {
    */
   isUpdateCheckingAvailable: (): Promise<boolean> => ipcRenderer.invoke('update:isAvailable'),
 
-  checkForUpdates: (): Promise<void> => ipcRenderer.invoke('update:check'),
+  /**
+   * `manual` diferencia um clique real do usuario (mostra o
+   * resultado, mesmo se for "nenhuma atualizacao"/erro) da checagem
+   * automatica que roda sozinha ao abrir o app (nunca gera feedback
+   * visivel a nao ser que encontre uma versao nova) — ver
+   * updateChecker.ts::registerUpdateEvents.
+   */
+  checkForUpdates: (manual = false): Promise<void> => ipcRenderer.invoke('update:check', manual),
 
   downloadUpdate: (): Promise<void> => ipcRenderer.invoke('update:download'),
 

@@ -11,12 +11,12 @@ function formatMb(bytes: number | null): string | null {
  * Notificacao de atualizacao — nunca bloqueia o uso do app (sem
  * backdrop, sem `role="dialog"` modal; so um cartao flutuante no canto
  * que o usuario pode ignorar). So monta alguma UI se
- * `isUpdateCheckingAvailable()` for `true` (ver preload/updateChecker.ts
- * — hoje sempre `false`, nenhum feed de atualizacao configurado ainda,
- * ver docs/HANDOFF.md) — enquanto isso, este componente nunca aparece
- * e nunca faz nenhuma chamada de rede. "Agora nao" so descarta o
- * cartao ate o app ser reaberto (nunca decide por conta propria adiar
- * uma atualizacao ja baixada).
+ * `isUpdateCheckingAvailable()` for `true` (ver
+ * main/services/updateChecker.ts — depende do canal de release ser
+ * `production`; em dev/teste este componente nunca aparece e nunca faz
+ * nenhuma chamada de rede). "Agora nao" so descarta o cartao ate o app
+ * ser reaberto (nunca decide por conta propria adiar uma atualizacao ja
+ * baixada).
  */
 export function UpdateNotification(): React.JSX.Element | null {
   const [enabled, setEnabled] = useState(false)
@@ -53,8 +53,15 @@ export function UpdateNotification(): React.JSX.Element | null {
         setStatus(next)
         // Uma nova verificacao (ex.: apos "Tentar novamente") deve
         // voltar a mostrar o cartao mesmo se uma tentativa anterior
-        // tinha sido dispensada.
-        if (next.status === 'available' || next.status === 'downloading' || next.status === 'ready') {
+        // tinha sido dispensada. `not-available` so chega ate aqui
+        // quando o usuario pediu a checagem de verdade (ver
+        // updateChecker.ts), entao tambem merece aparecer.
+        if (
+          next.status === 'available' ||
+          next.status === 'downloading' ||
+          next.status === 'ready' ||
+          next.status === 'not-available'
+        ) {
           setDismissed(false)
         }
       })
@@ -63,6 +70,15 @@ export function UpdateNotification(): React.JSX.Element | null {
     }
     return () => unsubscribe?.()
   }, [enabled])
+
+  // "Nenhuma atualizacao encontrada" e so uma confirmacao, nao exige
+  // acao do usuario — some sozinha depois de alguns segundos em vez de
+  // ficar ocupando o canto da tela esperando um clique em "Ok".
+  useEffect(() => {
+    if (status.status !== 'not-available') return undefined
+    const timer = setTimeout(() => setDismissed(true), 4000)
+    return () => clearTimeout(timer)
+  }, [status])
 
   const handleDownload = useCallback(() => {
     void window.gcReport.downloadUpdate()
@@ -73,12 +89,20 @@ export function UpdateNotification(): React.JSX.Element | null {
   }, [])
 
   const handleRetry = useCallback(() => {
-    void window.gcReport.checkForUpdates()
+    void window.gcReport.checkForUpdates(true)
   }, [])
 
   if (!enabled || dismissed) return null
-  if (status.status === 'idle' || status.status === 'disabled' || status.status === 'not-available') {
+  if (status.status === 'idle' || status.status === 'disabled') {
     return null
+  }
+
+  if (status.status === 'not-available') {
+    return (
+      <div className="update-toast update-toast--quiet" role="status">
+        <Icon name="check" size={13} /> Você já está usando a versão mais recente.
+      </div>
+    )
   }
 
   if (status.status === 'checking') {
@@ -157,10 +181,14 @@ export function UpdateNotification(): React.JSX.Element | null {
   }
 
   // status.status === 'error'
+  const errorMessage =
+    status.phase === 'download'
+      ? 'Não foi possível baixar a atualização.'
+      : 'Não foi possível verificar se existe uma atualização.'
   return (
     <div className="update-toast" role="status">
       <p className="drop-zone__error">
-        <Icon name="alert" size={14} /> Não foi possível baixar a atualização.
+        <Icon name="alert" size={14} /> {errorMessage}
       </p>
       <div className="update-toast__actions">
         <button type="button" className="btn btn--secondary" onClick={handleRetry}>
