@@ -17,6 +17,17 @@ function formatMb(bytes: number | null): string | null {
  * nenhuma chamada de rede). "Agora nao" so descarta o cartao ate o app
  * ser reaberto (nunca decide por conta propria adiar uma atualizacao ja
  * baixada).
+ *
+ * NUNCA dispara `checkForUpdates()` sozinho — so escuta o status
+ * (`onUpdateStatus`) e renderiza o que chegar. A UNICA acao que
+ * dispara uma checagem de verdade e o clique no botao "Verificar
+ * atualizacoes" em Configuracoes (ver SettingsOverlay.tsx); este
+ * componente so mostra o resultado quando ele chega. Achado real de
+ * uma auditoria anterior: aqui existia uma checagem automatica ao
+ * montar o componente (ou seja, toda vez que o app abria), que ficava
+ * presa em "Verificando atualizacoes..." pra sempre quando nao havia
+ * nada de novo — a causa raiz nao era so a mensagem errada, era o app
+ * verificar sozinho sem o usuario ter pedido.
  */
 export function UpdateNotification(): React.JSX.Element | null {
   const [enabled, setEnabled] = useState(false)
@@ -29,16 +40,12 @@ export function UpdateNotification(): React.JSX.Element | null {
       window.gcReport
         .isUpdateCheckingAvailable()
         .then((available) => {
-          if (cancelled) return
-          setEnabled(available)
-          if (available) {
-            void window.gcReport.checkForUpdates()
-          }
+          if (!cancelled) setEnabled(available)
         })
         .catch(() => {})
     } catch {
       // window.gcReport indisponivel (nao deveria acontecer no Electron
-      // real) — sem atualizacao automatica, nao critico.
+      // real) — botao de verificar so nao aparece, nao critico.
     }
     return () => {
       cancelled = true
@@ -89,7 +96,7 @@ export function UpdateNotification(): React.JSX.Element | null {
   }, [])
 
   const handleRetry = useCallback(() => {
-    void window.gcReport.checkForUpdates(true)
+    void window.gcReport.checkForUpdates()
   }, [])
 
   if (!enabled || dismissed) return null

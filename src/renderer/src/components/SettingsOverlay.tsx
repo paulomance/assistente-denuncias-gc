@@ -113,7 +113,7 @@ export function SettingsOverlay({
   }, [canCheckUpdates])
 
   const handleCheckForUpdates = useCallback(() => {
-    void window.gcReport.checkForUpdates(true)
+    void window.gcReport.checkForUpdates()
   }, [])
 
   useEffect(() => {

@@ -43,43 +43,57 @@ describe('checkForUpdates/downloadUpdate — desligados fora do canal production
   it('nunca chama o electron-updater quando o canal não é production', async () => {
     releaseChannel = 'development'
     const { checkForUpdates, downloadUpdate } = await freshModule()
-    await checkForUpdates(true)
+    await checkForUpdates()
     await downloadUpdate()
     expect(fakeAutoUpdater.checkForUpdates).not.toHaveBeenCalled()
     expect(fakeAutoUpdater.downloadUpdate).not.toHaveBeenCalled()
   })
 })
 
-describe('checagem automática (ao abrir o app) — nunca gera alarme sozinha', () => {
-  it('falha na checagem automática nunca chega até a UI', async () => {
-    const { checkForUpdates, registerUpdateEvents } = await freshModule()
-    const sender = vi.fn<(status: UpdateStatus) => void>()
-    registerUpdateEvents(sender)
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    await checkForUpdates() // manual=false (default) — igual ao que UpdateNotification chama ao montar
-    fakeAutoUpdater.emit('error', new Error('sem internet'))
-
-    const errorCalls = sender.mock.calls.filter(([status]) => status.status === 'error')
-    expect(errorCalls).toHaveLength(0)
-    // Nunca some sem deixar rastro: fica no log do processo principal
-    // pra quem estiver depurando, só não vira alarme pro usuário.
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('checagem automatica'), 'sem internet')
-    consoleSpy.mockRestore()
-  })
-
-  it('"nenhuma atualização" na checagem automática nunca chega até a UI', async () => {
+/**
+ * Achado real de uma auditoria anterior: `registerUpdateEvents` tinha
+ * um caso especial que engolia 'update-not-available'/'error' quando a
+ * checagem era "automatica" — o problema é que, como não existe mais
+ * NENHUMA checagem automática em lugar nenhum do app (a única forma de
+ * chamar `checkForUpdates()` é o clique manual, ver
+ * UpdateNotification.tsx e SettingsOverlay.tsx), esse caso especial
+ * fazia o status ficar preso em `{status: 'checking'}` pra sempre toda
+ * vez que não havia nada de novo — a UI nunca recebia o evento
+ * seguinte que resolveria o "Verificando atualizações...". A correção
+ * (ver updateChecker.ts) elimina esse caso: TODO evento agora chega
+ * até o `sender`, sem exceção — os testes abaixo garantem que
+ * `'checking-for-update'` sempre tem um evento terminal correspondente
+ * repassado depois.
+ */
+describe('toda checagem sempre termina num evento visível (nunca fica presa em "checking")', () => {
+  it('nenhuma atualização encontrada: chega até a UI (nunca fica em silêncio)', async () => {
     const { checkForUpdates, registerUpdateEvents } = await freshModule()
     const sender = vi.fn<(status: UpdateStatus) => void>()
     registerUpdateEvents(sender)
 
     await checkForUpdates()
+    fakeAutoUpdater.emit('checking-for-update')
     fakeAutoUpdater.emit('update-not-available')
 
-    expect(sender.mock.calls.filter(([status]) => status.status === 'not-available')).toHaveLength(0)
+    expect(sender).toHaveBeenNthCalledWith(1, { status: 'checking' })
+    expect(sender).toHaveBeenNthCalledWith(2, { status: 'not-available' })
+    expect(sender).toHaveBeenCalledTimes(2)
   })
 
-  it('uma atualização real encontrada sempre chega até a UI, mesmo vinda da checagem automática', async () => {
+  it('erro durante a checagem chega até a UI com phase "check" (nunca fica em silêncio)', async () => {
+    const { checkForUpdates, registerUpdateEvents } = await freshModule()
+    const sender = vi.fn<(status: UpdateStatus) => void>()
+    registerUpdateEvents(sender)
+
+    await checkForUpdates()
+    fakeAutoUpdater.emit('checking-for-update')
+    fakeAutoUpdater.emit('error', new Error('sem internet'))
+
+    expect(sender).toHaveBeenNthCalledWith(1, { status: 'checking' })
+    expect(sender).toHaveBeenNthCalledWith(2, { status: 'error', phase: 'check', message: 'sem internet' })
+  })
+
+  it('uma atualização real encontrada chega até a UI', async () => {
     const { checkForUpdates, registerUpdateEvents } = await freshModule()
     const sender = vi.fn<(status: UpdateStatus) => void>()
     registerUpdateEvents(sender)
@@ -96,37 +110,12 @@ describe('checagem automática (ao abrir o app) — nunca gera alarme sozinha', 
   })
 })
 
-describe('checagem manual (botão "Verificar atualizações") — sempre informa o resultado', () => {
-  it('falha na checagem manual chega até a UI com phase "check" (nunca "baixar")', async () => {
-    const { checkForUpdates, registerUpdateEvents } = await freshModule()
-    const sender = vi.fn<(status: UpdateStatus) => void>()
-    registerUpdateEvents(sender)
-
-    await checkForUpdates(true)
-    fakeAutoUpdater.emit('error', new Error('feed indisponível'))
-
-    expect(sender).toHaveBeenCalledWith({ status: 'error', phase: 'check', message: 'feed indisponível' })
-  })
-
-  it('"nenhuma atualização" na checagem manual informa o usuário', async () => {
-    const { checkForUpdates, registerUpdateEvents } = await freshModule()
-    const sender = vi.fn<(status: UpdateStatus) => void>()
-    registerUpdateEvents(sender)
-
-    await checkForUpdates(true)
-    fakeAutoUpdater.emit('update-not-available')
-
-    expect(sender).toHaveBeenCalledWith({ status: 'not-available' })
-  })
-})
-
-describe('download — sempre uma ação real do usuário, erro sempre visível', () => {
-  it('falha durante o download chega até a UI com phase "download", mesmo após uma checagem automática', async () => {
+describe('download — erro sempre chega com phase "download", nunca confundido com erro de checagem', () => {
+  it('falha durante o download chega até a UI com phase "download", mesmo após uma checagem que encontrou algo', async () => {
     const { checkForUpdates, downloadUpdate, registerUpdateEvents } = await freshModule()
     const sender = vi.fn<(status: UpdateStatus) => void>()
     registerUpdateEvents(sender)
 
-    // Checagem automática encontra uma versão nova primeiro (fluxo real).
     await checkForUpdates()
     fakeAutoUpdater.emit('update-available', { version: '1.2.3', releaseNotes: null, files: [{ size: 10 }] })
 
@@ -137,7 +126,7 @@ describe('download — sempre uma ação real do usuário, erro sempre visível'
     expect(sender).toHaveBeenCalledWith({ status: 'error', phase: 'download', message: 'conexão perdida' })
   })
 
-  it('download concluído sempre chega até a UI', async () => {
+  it('download concluído chega até a UI', async () => {
     const { downloadUpdate, registerUpdateEvents } = await freshModule()
     const sender = vi.fn<(status: UpdateStatus) => void>()
     registerUpdateEvents(sender)
