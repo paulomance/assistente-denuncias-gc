@@ -23,8 +23,8 @@ export function registerUpdateIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('update:isAvailable', async (): Promise<boolean> => isUpdateCheckingAvailable())
 
-  ipcMain.handle('update:check', async (): Promise<void> => {
-    await checkForUpdates()
+  ipcMain.handle('update:check', async (_event, manual?: boolean): Promise<void> => {
+    await checkForUpdates(manual === true)
   })
 
   ipcMain.handle('update:download', async (): Promise<void> => {

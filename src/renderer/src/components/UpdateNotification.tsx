@@ -18,16 +18,20 @@ function formatMb(bytes: number | null): string | null {
  * ser reaberto (nunca decide por conta propria adiar uma atualizacao ja
  * baixada).
  *
- * NUNCA dispara `checkForUpdates()` sozinho — so escuta o status
- * (`onUpdateStatus`) e renderiza o que chegar. A UNICA acao que
- * dispara uma checagem de verdade e o clique no botao "Verificar
- * atualizacoes" em Configuracoes (ver SettingsOverlay.tsx); este
- * componente so mostra o resultado quando ele chega. Achado real de
- * uma auditoria anterior: aqui existia uma checagem automatica ao
- * montar o componente (ou seja, toda vez que o app abria), que ficava
- * presa em "Verificando atualizacoes..." pra sempre quando nao havia
- * nada de novo — a causa raiz nao era so a mensagem errada, era o app
- * verificar sozinho sem o usuario ter pedido.
+ * Dispara uma checagem automatica (silenciosa) ao montar — motivo
+ * real: com ~300 instalacoes existentes e uma correcao critica pra
+ * distribuir (troca do binario do CSGOVE apos o CS2 quebrar
+ * compatibilidade em 11/11), depender so do clique manual em
+ * "Verificar atualizacoes" deixaria a maioria dos usuarios sem saber
+ * que existe uma correcao. Essa checagem automatica (`manual=false`,
+ * ver updateChecker.ts) NUNCA aparece pro usuario se falhar ou nao
+ * encontrar nada — o processo principal ja filtra isso na origem, este
+ * componente so renderiza com seguranca o que realmente chegar.
+ * Historico do bug ja corrigido aqui (nao reintroduzir): uma versao
+ * anterior mostrava "Verificando atualizacoes..." pra toda checagem
+ * (automatica inclusive) e ficava presa quando nao havia evento
+ * terminal correspondente — agora o estagio "checking" tambem so e
+ * enviado numa checagem manual, entao nunca ha nada preso.
  */
 export function UpdateNotification(): React.JSX.Element | null {
   const [enabled, setEnabled] = useState(false)
@@ -40,12 +44,16 @@ export function UpdateNotification(): React.JSX.Element | null {
       window.gcReport
         .isUpdateCheckingAvailable()
         .then((available) => {
-          if (!cancelled) setEnabled(available)
+          if (cancelled) return
+          setEnabled(available)
+          // Automatica (manual=false): nunca aparece nada se falhar ou
+          // nao encontrar nada — ver updateChecker.ts.
+          if (available) void window.gcReport.checkForUpdates()
         })
         .catch(() => {})
     } catch {
       // window.gcReport indisponivel (nao deveria acontecer no Electron
-      // real) — botao de verificar so nao aparece, nao critico.
+      // real) — sem checagem automatica, nao critico.
     }
     return () => {
       cancelled = true
@@ -96,7 +104,7 @@ export function UpdateNotification(): React.JSX.Element | null {
   }, [])
 
   const handleRetry = useCallback(() => {
-    void window.gcReport.checkForUpdates()
+    void window.gcReport.checkForUpdates(true)
   }, [])
 
   if (!enabled || dismissed) return null

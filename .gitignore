@@ -24,6 +24,14 @@ tools/
 # README.md para como obter/instalar o proprio arquivo localmente.
 credentials/
 
+# Mesma regra acima, mas pro nome padrao que o Google Cloud Console da
+# ao arquivo baixado (client_secret_<id>.apps.googleusercontent.com.json)
+# — achado real: uma copia desse arquivo ficou esquecida na RAIZ do
+# projeto (fora de credentials/, entao nao coberta pela regra acima) por
+# meses sem nunca ter sido commitada por pura sorte. Esta regra cobre
+# esse nome em QUALQUER lugar do repositorio, nao so na raiz.
+client_secret_*.apps.googleusercontent.com.json
+
 # Tokens de autenticacao do Google Drive persistidos localmente
 # (criptografados via safeStorage, mas mesmo assim nunca versionar).
 .gc-drive-auth/

@@ -132,11 +132,13 @@ const gcReportApi = {
   isUpdateCheckingAvailable: (): Promise<boolean> => ipcRenderer.invoke('update:isAvailable'),
 
   /**
-   * A UNICA forma de disparar isso e o clique no botao "Verificar
-   * atualizacoes" (ver SettingsOverlay.tsx) — nao existe checagem
-   * automatica em lugar nenhum do app (ver updateChecker.ts).
+   * `manual` diferencia um clique real do usuario (mostra sempre o
+   * resultado, mesmo "nenhuma atualizacao"/erro) da checagem automatica
+   * que roda sozinha ao abrir o app (so aparece pro usuario se
+   * encontrar uma atualizacao de verdade — qualquer falha fica
+   * invisivel de proposito) — ver updateChecker.ts::registerUpdateEvents.
    */
-  checkForUpdates: (): Promise<void> => ipcRenderer.invoke('update:check'),
+  checkForUpdates: (manual = false): Promise<void> => ipcRenderer.invoke('update:check', manual),
 
   downloadUpdate: (): Promise<void> => ipcRenderer.invoke('update:download'),
 

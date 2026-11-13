@@ -91,7 +91,7 @@ processar arquivos de demo do Counter-Strike e extrair as comunicações
 de voz neles contidas. O CSGOVE roda como um processo externo (nunca
 embutido no código-fonte deste projeto), e o binário e as DLLs que o
 acompanham são usados sem nenhuma modificação, exatamente como
-distribuídos no release oficial v3.1.6 — ficam em "resources/csgove/"
+distribuídos no release oficial v3.1.7 — ficam em "resources/csgove/"
 dentro da instalação deste app.
 
 O CSGOVE é um projeto independente, sem qualquer vínculo com a Gamers
@@ -124,7 +124,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 NOTA IMPORTANTE (ver README.md, seção "Limitações conhecidas"): o
-release oficial do CSGOVE (v3.1.6, win32-x64.zip, confirmado
+release oficial do CSGOVE (v3.1.7, win32-x64.zip, confirmado
 byte-a-byte contra a cópia usada por este projeto) inclui, além do
 binário do próprio CSGOVE, dois arquivos que não são código do autor
 do CSGOVE: \`tier0.dll\` e \`vaudio_celt.dll\`, componentes do motor
